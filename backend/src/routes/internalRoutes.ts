@@ -8,6 +8,7 @@
 
 import { Router } from 'express';
 import * as initExampleController from '@/api/internal/init-example/controller';
+import * as fileUploadController from '@/api/internal/file-upload/controller';
 
 const router = Router();
 
@@ -20,5 +21,13 @@ router.post('/init-example', initExampleController.createHandler);
 router.get('/init-example/:id', initExampleController.getHandler);
 router.put('/init-example/:id', initExampleController.updateHandler);
 router.delete('/init-example/:id', initExampleController.deleteHandler);
+
+/**
+ * @rule {be-route-configuration}
+ * File Upload routes - /api/internal/file-upload
+ */
+router.post('/file-upload', fileUploadController.uploadHandler);
+router.get('/file-upload/:id', fileUploadController.getHandler);
+router.delete('/file-upload/:id', fileUploadController.cancelHandler);
 
 export default router;

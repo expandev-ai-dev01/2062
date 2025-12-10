@@ -1,2 +1,2 @@
 // Domain modules export
-export {};
+export * as fileUpload from './fileUpload/_module';

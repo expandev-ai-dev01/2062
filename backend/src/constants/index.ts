@@ -18,3 +18,8 @@ export {
   type InitExampleLimitsType,
   type InitExamplePriority,
 } from './initExample';
+
+/**
+ * FileUpload constants
+ */
+export { FILE_UPLOAD_LIMITS, type FileUploadLimitsType } from './fileUpload';
