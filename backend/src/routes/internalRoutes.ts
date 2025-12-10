@@ -9,6 +9,7 @@
 import { Router } from 'express';
 import * as initExampleController from '@/api/internal/init-example/controller';
 import * as fileUploadController from '@/api/internal/file-upload/controller';
+import * as pngConversionController from '@/api/internal/png-conversion/controller';
 
 const router = Router();
 
@@ -29,5 +30,11 @@ router.delete('/init-example/:id', initExampleController.deleteHandler);
 router.post('/file-upload', fileUploadController.uploadHandler);
 router.get('/file-upload/:id', fileUploadController.getHandler);
 router.delete('/file-upload/:id', fileUploadController.cancelHandler);
+
+/**
+ * @rule {be-route-configuration}
+ * PNG Conversion routes - /api/internal/png-conversion
+ */
+router.post('/png-conversion', pngConversionController.convertHandler);
 
 export default router;

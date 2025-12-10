@@ -1,24 +1,42 @@
 /**
  * @page HomePage
- * Main page for PNG file upload functionality.
- * Integrates FileUploadZone, UploadProgress, and FilePreview components.
+ * Main page for PNG file upload and Base64 conversion functionality.
+ * Integrates FileUploadZone, UploadProgress, FilePreview, and ConversionResult components.
  */
 
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useFileUpload } from '@/domain/fileUpload/hooks/useFileUpload';
+import { usePngConversion } from '@/domain/pngConversion/hooks/usePngConversion';
 import { FileUploadZone } from '@/domain/fileUpload/components/FileUploadZone';
 import { FilePreview } from '@/domain/fileUpload/components/FilePreview';
 import { UploadProgress } from '@/domain/fileUpload/components/UploadProgress';
+import { ConversionResult } from '@/domain/pngConversion/components/ConversionResult';
 import { Alert, AlertDescription, AlertTitle } from '@/core/components/alert';
-import { AlertCircle } from 'lucide-react';
+import { Button } from '@/core/components/button';
+import { AlertCircle, ArrowRight } from 'lucide-react';
+import type { ConversionResult as ConversionResultType } from '@/domain/pngConversion/types';
 
 function HomePage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const { upload, uploadedFile, progress, isUploading, reset } = useFileUpload({
+  const [conversionResult, setConversionResult] = useState<ConversionResultType | null>(null);
+
+  const {
+    upload,
+    uploadedFile,
+    progress,
+    isUploading,
+    reset: resetUpload,
+  } = useFileUpload({
     onSuccess: () => {
       toast.success('Arquivo carregado com sucesso!');
       setSelectedFile(null);
+    },
+  });
+
+  const { convert, isConverting } = usePngConversion({
+    onSuccess: (result) => {
+      setConversionResult(result);
     },
   });
 
@@ -47,6 +65,7 @@ function HomePage() {
     }
 
     setSelectedFile(file);
+    setConversionResult(null);
 
     try {
       await upload(file);
@@ -55,23 +74,64 @@ function HomePage() {
     }
   };
 
-  const handleRemove = async () => {
-    if (uploadedFile?.id) {
-      try {
-        reset();
-        toast.success('Arquivo removido com sucesso');
-      } catch {
-        toast.error('Erro ao remover arquivo');
-      }
-    } else {
-      reset();
-      setSelectedFile(null);
+  const handleConvert = async () => {
+    if (!uploadedFile?.id) {
+      toast.error('Nenhum arquivo carregado para converter');
+      return;
+    }
+
+    try {
+      await convert(uploadedFile.id);
+    } catch (err) {
+      console.error('Conversion error:', err);
     }
   };
 
-  const handleReplace = () => {
-    reset();
+  const handleRemove = () => {
+    resetUpload();
     setSelectedFile(null);
+    setConversionResult(null);
+    toast.success('Arquivo removido com sucesso');
+  };
+
+  const handleReplace = () => {
+    resetUpload();
+    setSelectedFile(null);
+    setConversionResult(null);
+  };
+
+  const handleCopyBase64 = () => {
+    if (conversionResult?.base64String) {
+      navigator.clipboard
+        .writeText(conversionResult.base64String)
+        .then(() => {
+          toast.success('String Base64 copiada para a área de transferência!');
+        })
+        .catch(() => {
+          toast.error('Erro ao copiar para a área de transferência');
+        });
+    }
+  };
+
+  const handleDownloadBase64 = () => {
+    if (conversionResult?.base64String) {
+      const blob = new Blob([conversionResult.base64String], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${conversionResult.fileId}_base64.txt`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success('Arquivo Base64 baixado com sucesso!');
+    }
+  };
+
+  const handleNewConversion = () => {
+    resetUpload();
+    setSelectedFile(null);
+    setConversionResult(null);
   };
 
   return (
@@ -84,7 +144,7 @@ function HomePage() {
       </div>
 
       <div className="w-full space-y-6">
-        {!isUploading && !uploadedFile && (
+        {!isUploading && !uploadedFile && !conversionResult && (
           <FileUploadZone onFileSelect={handleFileSelect} disabled={isUploading} />
         )}
 
@@ -92,7 +152,7 @@ function HomePage() {
           <UploadProgress progress={progress} fileName={selectedFile.name} />
         )}
 
-        {uploadedFile && !isUploading && (
+        {uploadedFile && !isUploading && !conversionResult && (
           <div className="space-y-4">
             <Alert className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
               <AlertCircle className="text-green-600 dark:text-green-400" />
@@ -105,6 +165,31 @@ function HomePage() {
             </Alert>
 
             <FilePreview file={uploadedFile} onRemove={handleRemove} onReplace={handleReplace} />
+
+            <Button onClick={handleConvert} disabled={isConverting} className="w-full" size="lg">
+              {isConverting ? (
+                'Convertendo...'
+              ) : (
+                <>
+                  Converter para Base64
+                  <ArrowRight />
+                </>
+              )}
+            </Button>
+          </div>
+        )}
+
+        {conversionResult && (
+          <div className="space-y-4">
+            <ConversionResult
+              result={conversionResult}
+              onCopy={handleCopyBase64}
+              onDownload={handleDownloadBase64}
+            />
+
+            <Button onClick={handleNewConversion} variant="outline" className="w-full" size="lg">
+              Converter Novo Arquivo
+            </Button>
           </div>
         )}
       </div>
