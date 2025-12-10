@@ -7,5 +7,14 @@
  */
 
 export * from './initExample';
-export * from './fileUpload';
+export {
+  fileUploadProcess,
+  fileUploadGet,
+  fileUploadCancel,
+  type FileUploadEntity,
+  type FileUploadResponse,
+  type FileIdInput,
+  fileIdSchema,
+} from './fileUpload';
 export * from './pngConversion';
+export * from './pdfUpload';

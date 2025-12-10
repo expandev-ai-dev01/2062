@@ -23,3 +23,8 @@ export {
  * FileUpload constants
  */
 export { FILE_UPLOAD_LIMITS, type FileUploadLimitsType } from './fileUpload';
+
+/**
+ * PDFUpload constants
+ */
+export { PDF_UPLOAD_LIMITS, type PDFUploadLimitsType } from './pdfUpload';

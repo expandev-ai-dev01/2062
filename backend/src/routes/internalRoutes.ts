@@ -10,6 +10,7 @@ import { Router } from 'express';
 import * as initExampleController from '@/api/internal/init-example/controller';
 import * as fileUploadController from '@/api/internal/file-upload/controller';
 import * as pngConversionController from '@/api/internal/png-conversion/controller';
+import * as pdfUploadController from '@/api/internal/pdf-upload/controller';
 
 const router = Router();
 
@@ -36,5 +37,13 @@ router.delete('/file-upload/:id', fileUploadController.cancelHandler);
  * PNG Conversion routes - /api/internal/png-conversion
  */
 router.post('/png-conversion', pngConversionController.convertHandler);
+
+/**
+ * @rule {be-route-configuration}
+ * PDF Upload routes - /api/internal/pdf-upload
+ */
+router.post('/pdf-upload', pdfUploadController.uploadHandler);
+router.get('/pdf-upload/:id', pdfUploadController.getHandler);
+router.delete('/pdf-upload/:id', pdfUploadController.cancelHandler);
 
 export default router;
